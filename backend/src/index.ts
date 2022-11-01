@@ -8,12 +8,13 @@ import { json } from "body-parser";
 import typeDefs from "./graphql/typeDefs";
 import resolvers from "./graphql/resolvers";
 import { makeExecutableSchema } from "@graphql-tools/schema";
-
-interface MyContext {
-  token?: String;
-}
+import * as dotenv from "dotenv";
+import { getSession } from "next-auth/react";
+import { GraphQlContext, Session } from "./utils/types";
+import { PrismaClient } from "@prisma/client";
 
 async function main() {
+  dotenv.config();
   const app = express();
   const httpServer = http.createServer(app);
 
@@ -22,17 +23,29 @@ async function main() {
     resolvers,
   });
 
-  const server = new ApolloServer<MyContext>({
+  //Context parameters
+  const prisma = new PrismaClient();
+
+  const server = new ApolloServer<GraphQlContext>({
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
   await server.start();
   app.use(
     "/graphql",
-    cors<cors.CorsRequest>(),
+    cors<cors.CorsRequest>({
+      origin: process.env.CLIENT_ORIGIN,
+      credentials: true,
+    }),
     json(),
     expressMiddleware(server, {
-      context: async ({ req }) => ({ token: req.headers.token }),
+      context: async ({ req, res }) => {
+        const session = (await getSession({ req })) as Session;
+        return {
+          session,
+          prisma,
+        };
+      },
     })
   );
   await new Promise<void>((resolve) =>

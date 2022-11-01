@@ -9,10 +9,14 @@ export default function Home() {
 
   console.log("Here is Session", session);
 
-  const reloadSession = () => {};
+  const reloadSession = () => {
+    const event = new Event("visibilitychange");
+    document.dispatchEvent(event);
+  };
 
   return (
     <Box>
+      {session?.user.username}
       {session?.user?.username ? (
         <Chat />
       ) : (
