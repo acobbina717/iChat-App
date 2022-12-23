@@ -43,13 +43,48 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  conversations ConversationParticipant[]
+  messages      Message[]
 }
 
 model VerificationToken {
-  id  String  @id @default(auto()) @map("_id") @db.ObjectId
-  identifier String
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
   token      String   @unique
   expires    DateTime
+  identifier String
 
   @@unique([identifier, token])
+}
+
+model Conversation {
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  id                    String  @id @default(auto()) @map("_id") @db.ObjectId
+  participants          ConversationParticipant[]
+  messages              Message[] @relation("conversationMessages")
+  latestMessageId       String? @unique
+  latestMessage         Message? @relation(name: "latestConversationMessage",fields: [latestMessageId],references: [id], onUpdate:NoAction,onDelete:NoAction)
+}
+
+model ConversationParticipant {
+  id                    String  @id @default(auto()) @map("_id") @db.ObjectId
+  user                  User    @relation(fields: [userId],references: [id])
+  userId                String 
+  conversation          Conversation   @relation(fields: [conversationId],references: [id])
+  conversationId        String 
+  hasSeenLatestMessage  Boolean 
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Message {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  conversation      Conversation @relation(name: "conversationMessages",fields: [conversationId],references: [id])
+  conversationId    String
+  isLatestIn        Conversation? @relation(name: "latestConversationMessage")
+  sender            User      @relation(fields: [senderId],references: [id])
+  body              String
+  senderId          String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
