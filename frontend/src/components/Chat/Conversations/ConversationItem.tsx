@@ -37,7 +37,7 @@ interface ConversationItemProps {
   onLeaveConversation?: (conversation: ConversationPopulated) => void;
 }
 
-const ConversationItem: React.FC<ConversationItemProps> = ({
+const ConversationItem = ({
   userId,
   conversation,
   selectedConversationId,
@@ -47,7 +47,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   onEditConversation,
   onDeleteConversation,
   onLeaveConversation,
-}) => {
+}: ConversationItemProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleClick = (event: React.MouseEvent) => {

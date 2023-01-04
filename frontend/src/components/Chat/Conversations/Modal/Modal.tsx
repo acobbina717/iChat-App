@@ -33,11 +33,11 @@ interface ConversationModalProps {
   session: Session;
 }
 
-const ConversationModal: React.FC<ConversationModalProps> = ({
+const ConversationModal = ({
   isOpen,
   onClose,
   session,
-}) => {
+}: ConversationModalProps) => {
   const [username, setUsername] = useState("");
   const [participants, setParticipants] = useState<Array<SearchedUser>>([]);
   const {

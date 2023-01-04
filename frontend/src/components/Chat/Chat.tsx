@@ -8,7 +8,7 @@ interface ChatProps {
   session: Session;
 }
 
-const Chat: React.FC<ChatProps> = ({ session }) => {
+const Chat = ({ session }: ChatProps) => {
   return (
     <Flex height="100vh">
       <ConversationWrapper session={session} />

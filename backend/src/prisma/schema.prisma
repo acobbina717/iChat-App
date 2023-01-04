@@ -9,7 +9,7 @@ generator client {
 
 model Account {
   id                 String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId             String
+  userId             String   @db.ObjectId
   type               String
   provider           String
   providerAccountId  String
@@ -29,7 +29,7 @@ model Account {
 model Session {
   id           String  @id @default(auto()) @map("_id") @db.ObjectId
   sessionToken String   @unique
-  userId       String
+  userId       String   @db.ObjectId
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -62,16 +62,16 @@ model Conversation {
   id                    String  @id @default(auto()) @map("_id") @db.ObjectId
   participants          ConversationParticipant[]
   messages              Message[] @relation("conversationMessages")
-  latestMessageId       String? @unique
+  latestMessageId       String? @unique @db.ObjectId
   latestMessage         Message? @relation(name: "latestConversationMessage",fields: [latestMessageId],references: [id], onUpdate:NoAction,onDelete:NoAction)
 }
 
 model ConversationParticipant {
   id                    String  @id @default(auto()) @map("_id") @db.ObjectId
   user                  User    @relation(fields: [userId],references: [id])
-  userId                String 
+  userId                String  @db.ObjectId
   conversation          Conversation   @relation(fields: [conversationId],references: [id])
-  conversationId        String 
+  conversationId        String @db.ObjectId
   hasSeenLatestMessage  Boolean 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -80,11 +80,11 @@ model ConversationParticipant {
 model Message {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
   conversation      Conversation @relation(name: "conversationMessages",fields: [conversationId],references: [id])
-  conversationId    String
+  conversationId    String    @db.ObjectId
   isLatestIn        Conversation? @relation(name: "latestConversationMessage")
   sender            User      @relation(fields: [senderId],references: [id])
   body              String
-  senderId          String
+  senderId          String    @db.ObjectId
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }

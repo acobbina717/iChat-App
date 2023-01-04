@@ -15,9 +15,7 @@ interface ConversationWrapperProps {
   session: Session;
 }
 
-const ConversationWrapper: React.FC<ConversationWrapperProps> = ({
-  session,
-}) => {
+const ConversationWrapper = ({ session }: ConversationWrapperProps) => {
   const {
     data: conversationData,
     loading: conversationLoading,

@@ -12,10 +12,7 @@ interface MessagesHeaderProps {
   conversationId: string;
 }
 
-const MessagesHeader: React.FC<MessagesHeaderProps> = ({
-  userId,
-  conversationId,
-}) => {
+const MessagesHeader = ({ userId, conversationId }: MessagesHeaderProps) => {
   const router = useRouter();
   const { data, loading } = useQuery<ConversationData, null>(
     ConversationOperations.Queries.conversations

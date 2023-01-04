@@ -7,7 +7,7 @@ interface FeedWrapperProps {
   session: Session;
 }
 
-const FeedWrapper: React.FC<FeedWrapperProps> = ({ session }) => {
+const FeedWrapper = ({ session }: FeedWrapperProps) => {
   const router = useRouter();
 
   const { conversationId } = router.query;

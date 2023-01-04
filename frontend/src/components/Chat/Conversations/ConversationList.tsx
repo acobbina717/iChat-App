@@ -12,11 +12,11 @@ interface ConversationListProps {
   onViewConversation: (conversationId: string) => void;
 }
 
-const ConversationList: React.FC<ConversationListProps> = ({
+const ConversationList = ({
   session,
   conversations,
   onViewConversation,
-}) => {
+}: ConversationListProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const onOpen = () => setIsOpen(true);

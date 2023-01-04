@@ -1,8 +1,6 @@
-import * as React from "react";
-
 interface IAppProps {}
 
-const App: React.FunctionComponent<IAppProps> = (props) => {
+const App = () => {
   return <div></div>;
 };
 

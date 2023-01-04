@@ -7,10 +7,10 @@ interface ParticipantsProps {
   removeParticipant: (userId: string) => void;
 }
 
-const Participants: React.FC<ParticipantsProps> = ({
+const Participants = ({
   participants,
   removeParticipant,
-}) => {
+}: ParticipantsProps) => {
   return (
     <Flex mt={8} gap="10px" flexWrap="wrap">
       {participants.map((participant) => (

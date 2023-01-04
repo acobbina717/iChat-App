@@ -6,10 +6,7 @@ interface UserSearchListProps {
   addParticipant: (user: SearchedUser) => void;
 }
 
-const UserSearchList: React.FC<UserSearchListProps> = ({
-  users,
-  addParticipant,
-}) => {
+const UserSearchList = ({ users, addParticipant }: UserSearchListProps) => {
   return (
     <>
       {users.length === 0 ? (

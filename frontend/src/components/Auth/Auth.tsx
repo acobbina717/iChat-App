@@ -12,7 +12,7 @@ interface IAuthProps {
   reloadSession: () => void;
 }
 
-const Auth: React.FC<IAuthProps> = ({ session, reloadSession }) => {
+const Auth = ({ session, reloadSession }: IAuthProps) => {
   const [username, setUsername] = useState("");
   const [createUsername, { loading, error }] = useMutation<
     CreateUsernameData,
