@@ -24,7 +24,6 @@ const MessageItem = ({ message, sentByMe }: MessageItemProps) => {
       _hover={{ bg: "whiteAlpha.200" }}
       justify={sentByMe ? "flex-end" : "flex-start"}
       wordBreak="break-word"
-      border="1px solid red"
     >
       {!sentByMe && (
         <Flex align="flex-end">
