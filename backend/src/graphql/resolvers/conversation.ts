@@ -15,15 +15,13 @@ const resolvers = {
       context: GraphQlContext
     ): Promise<Array<ConversationPopulated>> => {
       const { prisma, session } = context;
+
       if (!session?.user) {
         throw new GraphQLError("Not Authorized");
       }
 
-      const {
-        user: { id: userId },
-      } = session;
-
       try {
+        const { id } = session.user;
         /**
          * Find all conversations that user is part of
          */
@@ -51,7 +49,7 @@ const resolvers = {
          */
         return conversations.filter(
           (conversation) =>
-            !!conversation.participants.find((p) => p.userId === userId)
+            !!conversation.participants.find((p) => p.userId === id)
         );
       } catch (error: any) {
         console.log("ConversationError", error);
@@ -73,9 +71,7 @@ const resolvers = {
         throw new GraphQLError("Not Authorized");
       }
 
-      const {
-        user: { id: userId },
-      } = session;
+      const { id: userId } = session.user;
 
       try {
         const conversation = await prisma.conversation.create({

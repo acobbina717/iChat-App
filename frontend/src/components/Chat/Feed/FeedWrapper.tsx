@@ -3,6 +3,7 @@ import { Session } from "next-auth";
 import { useRouter } from "next/router";
 import MessageHeader from "./Messages/Header";
 import MessageInput from "./Messages/Input";
+import Messages from "./Messages/Messages";
 
 interface FeedWrapperProps {
   session: Session;
@@ -32,7 +33,7 @@ const FeedWrapper = ({ session }: FeedWrapperProps) => {
             flexGrow={1}
           >
             <MessageHeader conversationId={conversationId} userId={userId} />
-            {/* <Messages/> */}
+            <Messages userId={userId} conversationId={conversationId} />
           </Flex>
           <MessageInput session={session} conversationId={conversationId} />
         </>

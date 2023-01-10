@@ -24,6 +24,7 @@ const resolvers = {
 
       const { id: userId } = session.user;
 
+      // Verify user is a participant
       const conversation = await prisma.conversation.findUnique({
         where: {
           id: conversationId,
@@ -35,20 +36,17 @@ const resolvers = {
 
       const allowedToView = userIsConversationParticipant(
         conversation.participants,
-
         userId
       );
 
       if (!allowedToView) throw new GraphQLError("Not authorized");
 
       try {
-        const messages = prisma.message.findMany({
+        const messages = await prisma.message.findMany({
           where: {
             conversationId,
           },
-
           include: messagePopulated,
-
           orderBy: {
             createdAt: "desc",
           },
@@ -70,15 +68,16 @@ const resolvers = {
       context: GraphQlContext
     ): Promise<boolean> => {
       const { prisma, pubsub, session } = context;
-      const { id: messageId, senderId, conversationId, body } = args;
       if (!session?.user) {
         throw new GraphQLError("Not authorized");
       }
-      const { id: userId } = session.user;
 
-      if (userId !== senderId) {
-        throw new GraphQLError("Not authorized");
-      }
+      const { id: userId } = session.user;
+      const { id: messageId, senderId, conversationId, body } = args;
+
+      // if (userId !== senderId) {
+      //   throw new GraphQLError("Not authorized");
+      // }
 
       try {
         // Create new message
@@ -92,23 +91,40 @@ const resolvers = {
           include: messagePopulated,
         });
 
+        // Find conversation participants
+        const conversationParticipant =
+          await prisma.conversationParticipant.findFirst({
+            where: {
+              userId,
+              conversationId,
+            },
+          });
+
+        if (!conversationParticipant)
+          throw new Error("Participant does not exist");
+
+        const { id: participantId } = conversationParticipant;
+
         // Update conversation
         const conversation = await prisma.conversation.update({
           where: {
             id: conversationId,
           },
           data: {
+            latestMessageId: newMessage.id,
             participants: {
               update: {
                 where: {
-                  id: senderId,
+                  id: participantId,
                 },
-                data: { hasSeenLatestMessage: true },
+                data: {
+                  hasSeenLatestMessage: true,
+                },
               },
               updateMany: {
                 where: {
                   NOT: {
-                    id: senderId,
+                    userId,
                   },
                 },
                 data: {
@@ -117,6 +133,7 @@ const resolvers = {
               },
             },
           },
+          include: conversationPopulated,
         });
 
         pubsub.publish("Message_Sent", { messageSent: newMessage });
@@ -138,6 +155,7 @@ const resolvers = {
       subscribe: withFilter(
         (_: any, __: any, context: GraphQlContext) => {
           const { pubsub } = context;
+
           return pubsub.asyncIterator("Message_Sent");
         },
         (
@@ -145,14 +163,14 @@ const resolvers = {
           arg: { conversationId: string },
           context: GraphQlContext
         ) => {
-          try {
-          } catch (error) {
-            if (error instanceof Error) {
-              console.log("MessageSentSubscriptionError:", error.message);
-              throw new GraphQLError(error.message);
-            }
-          }
+          // try {
 
+          // } catch (error) {
+          //   if (error instanceof Error) {
+          //     console.log("MessageSentSubscriptionError:", error.message);
+          //     throw new GraphQLError(error.message);
+          //   }
+          // }
           return payload.messageSent.conversationId === arg.conversationId;
         }
       ),
@@ -162,7 +180,10 @@ const resolvers = {
 
 export const messagePopulated = Prisma.validator<Prisma.MessageInclude>()({
   sender: {
-    select: { id: true, username: true },
+    select: {
+      id: true,
+      username: true,
+    },
   },
 });
 

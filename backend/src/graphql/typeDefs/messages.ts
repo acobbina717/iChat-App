@@ -10,6 +10,10 @@ const typeDefs = gql`
     createdAt: Date
   }
 
+  type Query {
+    messages(conversationId: String): [Message]
+  }
+
   type Mutation {
     sendMessage(
       id: String
@@ -21,10 +25,6 @@ const typeDefs = gql`
 
   type Subscription {
     messageSent(conversationId: String): Message
-  }
-
-  type Query {
-    messages: [Message]
   }
 `;
 
