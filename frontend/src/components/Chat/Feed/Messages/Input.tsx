@@ -3,9 +3,10 @@ import { Box, Input } from "@chakra-ui/react";
 import { Session } from "next-auth";
 import { toast } from "react-hot-toast";
 import { useMutation } from "@apollo/client";
-import messageOperations from "../../../../graphql/operations/message";
+import MessageOperations from "../../../../graphql/operations/message";
 import { SendMessageArgs } from "../../../../../../backend/src/utils/types";
 import { ObjectID } from "bson";
+import { MessagesData } from "../../../../utils/types";
 
 interface MessageInputProps {
   session: Session;
@@ -15,11 +16,12 @@ interface MessageInputProps {
 const MessageInput = ({ conversationId, session }: MessageInputProps) => {
   const [messageBody, setMessageBody] = useState("");
   const [sendMessage] = useMutation<{ sendMessage: boolean }, SendMessageArgs>(
-    messageOperations.Mutations.sendMessage
+    MessageOperations.Mutations.sendMessage
   );
 
   const onSendMessage = async (e: FormEvent) => {
     e.preventDefault();
+    if (!messageBody) return;
     try {
       //
       const { id: senderId } = session.user;
@@ -31,8 +33,43 @@ const MessageInput = ({ conversationId, session }: MessageInputProps) => {
         body: messageBody,
       };
 
+      setMessageBody("");
+
       const { data, errors } = await sendMessage({
         variables: { ...newMessage },
+        optimisticResponse: {
+          sendMessage: true,
+        },
+
+        update: (cache) => {
+          const cacheSnapshot = cache.readQuery<MessagesData>({
+            query: MessageOperations.Queries.messages,
+            variables: { conversationId },
+          }) as MessagesData;
+
+          cache.writeQuery<MessagesData, { conversationId: string }>({
+            query: MessageOperations.Queries.messages,
+            variables: { conversationId },
+            data: {
+              ...cacheSnapshot,
+              messages: [
+                {
+                  id: messageId,
+                  body: messageBody,
+                  senderId: session.user.id,
+                  conversationId,
+                  sender: {
+                    id: session.user.id,
+                    username: session.user.username,
+                  },
+                  createdAt: new Date(Date.now()),
+                  updatedAt: new Date(Date.now()),
+                },
+                ...cacheSnapshot.messages,
+              ],
+            },
+          });
+        },
       });
 
       if (!data?.sendMessage || errors) {
